@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StrengthPlate | Personalized Nutrition Planner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #FF9800;
+            --accent: #2196F3;
+            --light: #F5F9F5;
+            --dark: #2E7D32;
+            --text: #333;
+            --gray: #888;
+            --white: #fff;
+            --darker: #1B5E20;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e6f7e6, #f0fff0);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            background: var(--primary);
+            color: var(--white);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .logo-text {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 28px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        nav a:hover, nav a.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        /* Main content styles */
+        .main-content {
+            min-height: calc(100vh - 150px);
+            padding: 30px 0;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Home Page Styles */
+        .hero {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+        
+        .hero-content {
+            flex: 1;
+        }
+        
+        .hero h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 48px;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .hero h1 span {
+            color: var(--primary);
+        }
+        
+        .hero p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: var(--gray);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--white);
+            padding: 14px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .hero-image img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .feature-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon {
+            background: var(--light);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            color: var(--primary);
+        }
+        
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .feature-card p {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        .quote {
+            font-style: italic;
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            background: rgba(76, 175, 80, 0.05);
+        }
+        
+        /* Meal Plan Page */
+        .meal-plan-container {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .meal-plan-form {
+            flex: 1;
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+        
+        .meal-plan-form h2 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--dark);
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .meal-plan-result {
+            flex: 1;
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+        
+        .meal-plan-result h2 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--dark);
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+        
+        .meal-card {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .meal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .meal-title {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--dark);
+        }
+        
+        .meal-time {
+            background: var(--primary);
+            color: var(--white);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .meal-items {
+            list-style-type: none;
+        }
+        
+        .meal-items li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .meal-items li:last-child {
+            border-bottom: none;
+        }
+        
+        .food-name {
+            font-weight: 500;
+        }
+        
+        .food-portion {
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        /* Nutrition Guide Page */
+        .nutrition-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .nutrition-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+        
+        .nutrition-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .card-body ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .card-body li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .card-body li:last-child {
+            border-bottom: none;
+        }
+        
+        .nutrient-name {
+            font-weight: 500;
+        }
+        
+        .nutrient-value {
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        /* Progress Page */
+        .progress-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .progress-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+        
+        .progress-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-chart {
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            padding: 20px 0;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            background: var(--light);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+        }
+        
+        .bar-fill {
+            background: var(--primary);
+            border-radius: 8px 8px 0 0;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            transition: height 1s ease;
+        }
+        
+        .chart-label {
+            text-align: center;
+            font-size: 14px;
+            color: var(--gray);
+            padding-top: 10px;
+        }
+        
+        .milestones {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .milestone-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .milestone-card.completed {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .milestone-card.completed .milestone-icon {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .milestone-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        /* Community Page */
+        .community-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .post-form {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        
+        .post-form textarea {
+            width: 100%;
+            height: 100px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        
+        .posts-container {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .post {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .post:last-child {
+            border-bottom: none;
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .post-user {
+            font-weight: 600;
+        }
+        
+        .post-time {
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .post-content {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .post-actions {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .post-action {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .post-action:hover {
+            color: var(--primary);
+        }
+        
+        .community-sidebar {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+        
+        .members-list {
+            margin-top: 20px;
+        }
+        
+        .member {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .member:last-child {
+            border-bottom: none;
+        }
+        
+        /* Authentication */
+        .auth-container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 40px;
+            box-shadow: var(--shadow);
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            background: var(--light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-tab:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+        
+        .auth-tab:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .auth-tab.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .error-message {
+            color: #ff0000;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--gray);
+            border-top: 1px solid #eee;
+            background: white;
+            margin-top: 50px;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary);
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(76, 175, 80, 0.3);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+            }
+            
+            .meal-plan-container {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 20px;
+                padding: 15px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .progress-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .community-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">S</div>
+                <div class="logo-text">StrengthPlate</div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-page="home"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="#" class="nav-link" data-page="meal-plans"><i class="fas fa-utensils"></i> Meal Plans</a></li>
+                    <li><a href="#" class="nav-link" data-page="nutrition"><i class="fas fa-book-open"></i> Nutrition Guide</a></li>
+                    <li><a href="#" class="nav-link" data-page="progress"><i class="fas fa-chart-line"></i> Progress</a></li>
+                    <li><a href="#" class="nav-link" data-page="community"><i class="fas fa-users"></i> Community</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions" id="user-actions">
+                <button class="btn" id="login-btn">Login</button>
+                <button class="btn btn-secondary" id="signup-btn">Sign Up</button>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <!-- Home Page -->
+            <div id="home" class="page active">
+                <section class="hero">
+                    <div class="hero-content">
+                        <h1>Transform Your Health, <span>Build Your Strength</span></h1>
+                        <p>Personalized nutrition plans designed for those who want to overcome weakness and build lasting vitality. Your journey to a stronger, healthier you starts with what's on your plate.</p>
+                        <div class="quote">
+                            "Strength doesn't come from what you can do. It comes from overcoming the things you once thought you couldn't." - Rikki Rogers
+                        </div>
+                        <a href="#" class="btn" id="get-started">Get Started</a>
+                    </div>
+                    <div class="hero-image">
+                        <img src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?auto=format&fit=crop&w=600&h=500&q=80" alt="Healthy food variety">
+                    </div>
+                </section>
+                
+                <section class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">🥗</div>
+                        <h3>Personalized Plans</h3>
+                        <p>Meal plans tailored to your taste preferences, dietary needs, and health goals.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⏱️</div>
+                        <h3>Optimal Meal Timing</h3>
+                        <p>Strategically timed meals to maximize energy and nutrient absorption throughout your day.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Progress Tracking</h3>
+                        <p>Monitor your nutritional intake and strength gains with our easy-to-use dashboard.</p>
+                    </div>
+                </section>
+                
+                <section class="motivational-section">
+                    <h2>Your Strength Journey Starts Here</h2>
+                    <p>Every meal is a building block for your stronger future. With consistent nutrition, you'll transform not just your body, but your energy, focus, and overall vitality.</p>
+                    <a href="#" class="btn" id="join-community">Join Our Community</a>
+                </section>
+            </div>
+            
+            <!-- Meal Plans Page -->
+            <div id="meal-plans" class="page">
+                <h1><i class="fas fa-utensils"></i> Personalized Meal Plans</h1>
+                <p class="subtitle">Create your custom meal plan based on your preferences and goals</p>
+                
+                <div class="meal-plan-container">
+                    <div class="meal-plan-form">
+                        <h2>Create Your Meal Plan</h2>
+                        <form id="preference-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="diet-type">Diet Type</label>
+                                    <select class="form-control" id="diet-type" required>
+                                        <option value="">Select your diet</option>
+                                        <option value="balanced">Balanced</option>
+                                        <option value="vegetarian">Vegetarian</option>
+                                        <option value="vegan">Vegan</option>
+                                        <option value="high-protein">High Protein</option>
+                                        <option value="low-carb">Low Carb</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="taste">Taste Preference</label>
+                                    <select class="form-control" id="taste" required>
+                                        <option value="">Select preference</option>
+                                        <option value="savory">Savory</option>
+                                        <option value="sweet">Sweet</option>
+                                        <option value="spicy">Spicy</option>
+                                        <option value="mixed">Mixed</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="calories">Daily Calories</label>
+                                    <select class="form-control" id="calories" required>
+                                        <option value="">Select calorie target</option>
+                                        <option value="1600">1600 (Light Activity)</option>
+                                        <option value="2000">2000 (Moderate Activity)</option>
+                                        <option value="2400">2400 (Active Lifestyle)</option>
+                                        <option value="2800">2800 (Strength Building)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="allergies">Allergies/Restrictions</label>
+                                    <input type="text" class="form-control" id="allergies" placeholder="Dairy, nuts, gluten...">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="goals">Health Goals</label>
+                                <textarea class="form-control" id="goals" rows="3" placeholder="Build strength, gain weight, improve energy..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn">Generate Meal Plan</button>
+                        </form>
+                    </div>
+                    
+                    <div class="meal-plan-result">
+                        <h2>Your Daily Meal Plan</h2>
+                        <div id="meal-plan-container">
+                            <div class="meal-card">
+                                <div class="meal-header">
+                                    <div class="meal-title">Breakfast</div>
+                                    <div class="meal-time">8:00 AM</div>
+                                </div>
+                                <ul class="meal-items">
+                                    <li>
+                                        <span class="food-name">Oatmeal with Berries</span>
+                                        <span class="food-portion">1 bowl</span>
+                                    </li>
+                                    <li>
+                                        <span class="food-name">Greek Yogurt</span>
+                                        <span class="food-portion">150g</span>
+                                    </li>
+                                    <li>
+                                        <span class="food-name">Almonds</span>
+                                        <span class="food-portion">Handful</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="meal-card">
+                                <div class="meal-header">
+                                    <div class="meal-title">Morning Snack</div>
+                                    <div class="meal-time">11:00 AM</div>
+                                </div>
+                                <ul class="meal-items">
+                                    <li>
+                                        <span class="food-name">Protein Shake</span>
+                                        <span class="food-portion">1 serving</span>
+                                    </li>
+                                    <li>
+                                        <span class="food-name">Banana</span>
+                                        <span class="food-portion">1 medium</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" style="width: 100%; margin-top: 20px;" id="save-plan">Save to Your Profile</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Nutrition Guide Page -->
+            <div id="nutrition" class="page">
+                <h1><i class="fas fa-book-open"></i> Nutrition Guide</h1>
+                <p class="subtitle">Learn about essential nutrients for building strength and vitality</p>
+                
+                <div class="nutrition-cards">
+                    <div class="nutrition-card">
+                        <div class="card-header">Protein Sources</div>
+                        <div class="card-body">
+                            <ul>
+                                <li>
+                                    <span class="nutrient-name">Chicken Breast</span>
+                                    <span class="nutrient-value">31g protein/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Salmon</span>
+                                    <span class="nutrient-value">25g protein/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Lentils</span>
+                                    <span class="nutrient-value">9g protein/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Greek Yogurt</span>
+                                    <span class="nutrient-value">10g protein/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Eggs</span>
+                                    <span class="nutrient-value">6g protein/egg</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="nutrition-card">
+                        <div class="card-header">Healthy Fats</div>
+                        <div class="card-body">
+                            <ul>
+                                <li>
+                                    <span class="nutrient-name">Avocado</span>
+                                    <span class="nutrient-value">15g fat/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Almonds</span>
+                                    <span class="nutrient-value">49g fat/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Olive Oil</span>
+                                    <span class="nutrient-value">100g fat/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Chia Seeds</span>
+                                    <span class="nutrient-value">31g fat/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Salmon</span>
+                                    <span class="nutrient-value">13g fat/100g</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="nutrition-card">
+                        <div class="card-header">Complex Carbs</div>
+                        <div class="card-body">
+                            <ul>
+                                <li>
+                                    <span class="nutrient-name">Oats</span>
+                                    <span class="nutrient-value">66g carbs/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Sweet Potato</span>
+                                    <span class="nutrient-value">20g carbs/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Quinoa</span>
+                                    <span class="nutrient-value">64g carbs/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Brown Rice</span>
+                                    <span class="nutrient-value">77g carbs/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Whole Wheat Bread</span>
+                                    <span class="nutrient-value">49g carbs/100g</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="nutrition-card">
+                        <div class="card-header">Vitamins & Minerals</div>
+                        <div class="card-body">
+                            <ul>
+                                <li>
+                                    <span class="nutrient-name">Spinach (Iron)</span>
+                                    <span class="nutrient-value">2.7mg/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Oranges (Vitamin C)</span>
+                                    <span class="nutrient-value">53mg/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Bananas (Potassium)</span>
+                                    <span class="nutrient-value">358mg/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Milk (Calcium)</span>
+                                    <span class="nutrient-value">125mg/100g</span>
+                                </li>
+                                <li>
+                                    <span class="nutrient-name">Sunflower Seeds (Magnesium)</span>
+                                    <span class="nutrient-value">325mg/100g</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Page -->
+            <div id="progress" class="page">
+                <h1><i class="fas fa-chart-line"></i> Your Progress</h1>
+                <p class="subtitle">Track your nutrition and strength journey</p>
+                
+                <div class="progress-container">
+                    <div class="progress-card">
+                        <h2 class="progress-title"><i class="fas fa-weight"></i> Weight Progress</h2>
+                        <div class="progress-chart">
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 30%;"></div>
+                                <div class="chart-label">Jan</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 45%;"></div>
+                                <div class="chart-label">Feb</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 60%;"></div>
+                                <div class="chart-label">Mar</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 75%;"></div>
+                                <div class="chart-label">Apr</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 90%;"></div>
+                                <div class="chart-label">May</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 100%;"></div>
+                                <div class="chart-label">Jun</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-card">
+                        <h2 class="progress-title"><i class="fas fa-apple-alt"></i> Nutrition Compliance</h2>
+                        <div class="progress-chart">
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 65%; background: var(--accent);"></div>
+                                <div class="chart-label">Mon</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 80%; background: var(--accent);"></div>
+                                <div class="chart-label">Tue</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 70%; background: var(--accent);"></div>
+                                <div class="chart-label">Wed</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 90%; background: var(--accent);"></div>
+                                <div class="chart-label">Thu</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 85%; background: var(--accent);"></div>
+                                <div class="chart-label">Fri</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 95%; background: var(--accent);"></div>
+                                <div class="chart-label">Sat</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h2 style="margin-top: 40px;">Strength Milestones</h2>
+                <div class="milestones">
+                    <div class="milestone-card completed">
+                        <div class="milestone-icon"><i class="fas fa-check"></i></div>
+                        <h3>Consistent Nutrition</h3>
+                        <p>7 days in a row</p>
+                    </div>
+                    <div class="milestone-card completed">
+                        <div class="milestone-icon"><i class="fas fa-check"></i></div>
+                        <h3>Protein Goal</h3>
+                        <p>5 consecutive days</p>
+                    </div>
+                    <div class="milestone-card">
+                        <div class="milestone-icon"><i class="fas fa-dumbbell"></i></div>
+                        <h3>Strength Increase</h3>
+                        <p>10% on main lifts</p>
+                    </div>
+                    <div class="milestone-card">
+                        <div class="milestone-icon"><i class="fas fa-weight"></i></div>
+                        <h3>Weight Goal</h3>
+                        <p>Gain 2kg muscle</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Community Page -->
+            <div id="community" class="page">
+                <h1><i class="fas fa-users"></i> Community</h1>
+                <p class="subtitle">Connect with others on their strength journey</p>
+                
+                <div class="community-container">
+                    <div>
+                        <div class="post-form">
+                            <textarea placeholder="Share your progress, ask a question, or encourage others..."></textarea>
+                            <button class="btn">Post to Community</button>
+                        </div>
+                        
+                        <div class="posts-container">
+                            <div class="post">
+                                <div class="post-header">
+                                    <div class="avatar">MJ</div>
+                                    <div>
+                                        <div class="post-user">Michael Johnson</div>
+                                        <div class="post-time">2 hours ago</div>
+                                    </div>
+                                </div>
+                                <div class="post-content">
+                                    Just completed my first month with StrengthPlate and I've already gained 2kg of muscle! The meal plans are delicious and easy to follow. Feeling stronger every day 💪
+                                </div>
+                                <div class="post-actions">
+                                    <div class="post-action">
+                                        <i class="fas fa-thumbs-up"></i> 24
+                                    </div>
+                                    <div class="post-action">
+                                        <i class="fas fa-comment"></i> 5
+                                    </div>
+                                    <div class="post-action">
+                                        <i class="fas fa-share"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="post">
+                                <div class="post-header">
+                                    <div class="avatar">SP</div>
+                                    <div>
+                                        <div class="post-user">Sarah Peterson</div>
+                                        <div class="post-time">5 hours ago</div>
+                                    </div>
+                                </div>
+                                <div class="post-content">
+                                    Does anyone have recommendations for high-protein vegetarian meals? I'm struggling to meet my protein goals without meat.
+                                </div>
+                                <div class="post-actions">
+                                    <div class="post-action">
+                                        <i class="fas fa-thumbs-up"></i> 12
+                                    </div>
+                                    <div class="post-action">
+                                        <i class="fas fa-comment"></i> 8
+                                    </div>
+                                    <div class="post-action">
+                                        <i class="fas fa-share"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="post">
+                                <div class="post-header">
+                                    <div class="avatar">DR</div>
+                                    <div>
+                                        <div class="post-user">David Rodriguez</div>
+                                        <div class="post-time">1 day ago</div>
+                                    </div>
+                                </div>
+                                <div class="post-content">
+                                    Just hit a new personal record on my bench press! 10kg more than last month. Consistent nutrition really does make a difference. Thanks to everyone who shared their meal prep tips last week!
+                                </div>
+                                <div class="post-actions">
+                                    <div class="post-action">
+                                        <i class="fas fa-thumbs-up"></i> 42
+                                    </div>
+                                    <div class="post-action">
+                                        <i class="fas fa-comment"></i> 15
+                                    </div>
+                                    <div class="post-action">
+                                        <i class="fas fa-share"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="community-sidebar">
+                        <h2><i class="fas fa-trophy"></i> Top Contributors</h2>
+                        <div class="members-list">
+                            <div class="member">
+                                <div class="avatar">MJ</div>
+                                <div>
+                                    <div class="post-user">Michael Johnson</div>
+                                    <div class="post-time">125 posts</div>
+                                </div>
+                            </div>
+                            <div class="member">
+                                <div class="avatar">DR</div>
+                                <div>
+                                    <div class="post-user">David Rodriguez</div>
+                                    <div class="post-time">98 posts</div>
+                                </div>
+                            </div>
+                            <div class="member">
+                                <div class="avatar">SP</div>
+                                <div>
+                                    <div class="post-user">Sarah Peterson</div>
+                                    <div class="post-time">76 posts</div>
+                                </div>
+                            </div>
+                            <div class="member">
+                                <div class="avatar">TL</div>
+                                <div>
+                                    <div class="post-user">Taylor Lopez</div>
+                                    <div class="post-time">64 posts</div>
+                                </div>
+                            </div>
+                            <div class="member">
+                                <div class="avatar">AK</div>
+                                <div>
+                                    <div class="post-user">Alex Kim</div>
+                                    <div class="post-time">52 posts</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Authentication Page -->
+            <div id="auth" class="page">
+                <div class="auth-container">
+                    <div class="auth-tabs">
+                        <div class="auth-tab active" data-tab="login">Login</div>
+                        <div class="auth-tab" data-tab="signup">Sign Up</div>
+                    </div>
+                    
+                    <div class="auth-form active" id="login-form">
+                        <div class="error-message" id="login-error"></div>
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" class="form-control" id="login-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" class="form-control" id="login-password" required>
+                        </div>
+                        <button class="btn" id="login-btn">Login</button>
+                        <div class="auth-footer">
+                            <a href="#" id="forgot-password">Forgot password?</a>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-form" id="signup-form">
+                        <div class="error-message" id="signup-error"></div>
+                        <div class="form-group">
+                            <label for="signup-name">Full Name</label>
+                            <input type="text" class="form-control" id="signup-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email">Email</label>
+                            <input type="email" class="form-control" id="signup-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">Password</label>
+                            <input type="password" class="form-control" id="signup-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-confirm">Confirm Password</label>
+                            <input type="password" class="form-control" id="signup-confirm" required>
+                        </div>
+                        <button class="btn" id="signup-btn">Create Account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2023 StrengthPlate - Personalized Nutrition for Building Strength. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Firebase configuration (placeholder - replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // DOM Elements
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('.page');
+        const userActions = document.getElementById('user-actions');
+        const getStartedBtn = document.getElementById('get-started');
+        const joinCommunityBtn = document.getElementById('join-community');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const preferenceForm = document.getElementById('preference-form');
+        const mealPlanContainer = document.getElementById('meal-plan-container');
+        const savePlanBtn = document.getElementById('save-plan');
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        
+        // Current user state
+        let currentUser = null;
+        
+        // Navigation
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page');
+                
+                // Update active nav link
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                // Show the selected page
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+            });
+        });
+        
+        // Show authentication page
+        function showAuthPage() {
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById('auth').classList.add('active');
+            navLinks.forEach(l => l.classList.remove('active'));
+        }
+        
+        // Switch auth tabs
+        authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                authTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                loginForm.classList.toggle('active', tab.dataset.tab === 'login');
+                signupForm.classList.toggle('active', tab.dataset.tab === 'signup');
+            });
+        });
+        
+        // Update UI based on authentication state
+        function updateAuthUI(user) {
+            currentUser = user;
+            
+            if (user) {
+                // User is signed in
+                userActions.innerHTML = `
+                    <div class="user-profile">
+                        <div class="avatar">${user.email.charAt(0).toUpperCase()}</div>
+                        <div>${user.email}</div>
+                        <button class="btn btn-secondary" id="logout-btn">Logout</button>
+                    </div>
+                `;
+                
+                // Add logout functionality
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    auth.signOut();
+                });
+            } else {
+                // User is signed out
+                userActions.innerHTML = `
+                    <button class="btn" id="login-btn">Login</button>
+                    <button class="btn btn-secondary" id="signup-btn">Sign Up</button>
+                `;
+                
+                // Add event listeners to new buttons
+                document.getElementById('login-btn').addEventListener('click', showAuthPage);
+                document.getElementById('signup-btn').addEventListener('click', showAuthPage);
+            }
+        }
+        
+        // Handle form submission for meal plan generation
+        preferenceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            mealPlanContainer.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Creating your personalized meal plan...</p>
+                </div>
+            `;
+            
+            // Get form values
+            const dietType = document.getElementById('diet-type').value;
+            const taste = document.getElementById('taste').value;
+            const calories = document.getElementById('calories').value;
+            const allergies = document.getElementById('allergies').value;
+            const goals = document.getElementById('goals').value;
+            
+            // Simulate meal plan generation (in a real app, this would be more complex)
+            setTimeout(() => {
+                generateMealPlan(dietType, taste, calories, allergies, goals);
+            }, 1500);
+        });
+        
+        // Generate meal plan based on preferences
+        function generateMealPlan(dietType, taste, calories, allergies, goals) {
+            // Sample meal plan data based on preferences
+            const mealPlan = {
+                breakfast: {
+                    time: "8:00 AM",
+                    items: [
+                        { name: "Oatmeal with Berries and Almonds", portion: "1 bowl" },
+                        { name: "Greek Yogurt", portion: "150g" }
+                    ]
+                },
+                morningSnack: {
+                    time: "11:00 AM",
+                    items: [
+                        { name: "Protein Shake", portion: "1 serving" },
+                        { name: "Banana", portion: "1 medium" }
+                    ]
+                },
+                lunch: {
+                    time: "1:30 PM",
+                    items: [
+                        { name: "Grilled Chicken Salad", portion: "Large bowl" },
+                        { name: "Quinoa", portion: "1 cup" },
+                        { name: "Avocado", portion: "1/2" }
+                    ]
+                },
+                afternoonSnack: {
+                    time: "4:00 PM",
+                    items: [
+                        { name: "Cottage Cheese", portion: "100g" },
+                        { name: "Apple", portion: "1 medium" }
+                    ]
+                },
+                dinner: {
+                    time: "7:00 PM",
+                    items: [
+                        { name: "Salmon Fillet", portion: "150g" },
+                        { name: "Steamed Vegetables", portion: "1.5 cups" },
+                        { name: "Sweet Potato", portion: "1 medium" }
+                    ]
+                }
+            };
+            
+            // Adjust based on diet type
+            if (dietType === "vegetarian" || dietType === "vegan") {
+                mealPlan.lunch.items[0].name = "Chickpea and Vegetable Stir-fry";
+                mealPlan.dinner.items[0].name = dietType === "vegan" ? "Tofu Curry" : "Grilled Halloumi";
+                
+                if (dietType === "vegan") {
+                    mealPlan.breakfast.items[1].name = "Soy Yogurt";
+                    mealPlan.morningSnack.items[0].name = "Vegan Protein Shake";
+                    mealPlan.afternoonSnack.items[0].name = "Hummus with Veggies";
+                }
+            }
+            
+            // Adjust based on calorie target
+            if (calories === "2800") {
+                mealPlan.breakfast.items.push({ name: "Whole Wheat Toast", portion: "2 slices" });
+                mealPlan.morningSnack.items.push({ name: "Handful of Nuts", portion: "30g" });
+                mealPlan.lunch.items.push({ name: "Whole Grain Roll", portion: "1" });
+            }
+            
+            // Render the meal plan
+            renderMealPlan(mealPlan);
+        }
+        
+        // Render meal plan to the DOM
+        function renderMealPlan(plan) {
+            mealPlanContainer.innerHTML = `
+                <div class="meal-card">
+                    <div class="meal-header">
+                        <div class="meal-title">Breakfast</div>
+                        <div class="meal-time">${plan.breakfast.time}</div>
+                    </div>
+                    <ul class="meal-items">
+                        ${plan.breakfast.items.map(item => `
+                            <li>
+                                <span class="food-name">${item.name}</span>
+                                <span class="food-portion">${item.portion}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                
+                <div class="meal-card">
+                    <div class="meal-header">
+                        <div class="meal-title">Morning Snack</div>
+                        <div class="meal-time">${plan.morningSnack.time}</div>
+                    </div>
+                    <ul class="meal-items">
+                        ${plan.morningSnack.items.map(item => `
+                            <li>
+                                <span class="food-name">${item.name}</span>
+                                <span class="food-portion">${item.portion}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                
+                <div class="meal-card">
+                    <div class="meal-header">
+                        <div class="meal-title">Lunch</div>
+                        <div class="meal-time">${plan.lunch.time}</div>
+                    </div>
+                    <ul class="meal-items">
+                        ${plan.lunch.items.map(item => `
+                            <li>
+                                <span class="food-name">${item.name}</span>
+                                <span class="food-portion">${item.portion}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                
+                <div class="meal-card">
+                    <div class="meal-header">
+                        <div class="meal-title">Afternoon Snack</div>
+                        <div class="meal-time">${plan.afternoonSnack.time}</div>
+                    </div>
+                    <ul class="meal-items">
+                        ${plan.afternoonSnack.items.map(item => `
+                            <li>
+                                <span class="food-name">${item.name}</span>
+                                <span class="food-portion">${item.portion}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                
+                <div class="meal-card">
+                    <div class="meal-header">
+                        <div class="meal-title">Dinner</div>
+                        <div class="meal-time">${plan.dinner.time}</div>
+                    </div>
+                    <ul class="meal-items">
+                        ${plan.dinner.items.map(item => `
+                            <li>
+                                <span class="food-name">${item.name}</span>
+                                <span class="food-portion">${item.portion}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // Save meal plan to Firestore
+        savePlanBtn.addEventListener('click', async () => {
+            if (!currentUser) {
+                alert('Please log in to save your meal plan');
+                showAuthPage();
+                return;
+            }
+            
+            // In a real app, this would save to Firestore
+            alert('Meal plan saved to your profile!');
+        });
+        
+        // Handle login
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                // Navigate to home page after login
+                navLinks[0].click();
+            } catch (error) {
+                document.getElementById('login-error').textContent = error.message;
+            }
+        });
+        
+        // Handle signup
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm').value;
+            
+            if (password !== confirmPassword) {
+                document.getElementById('signup-error').textContent = "Passwords do not match";
+                return;
+            }
+            
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                // Save additional user data to Firestore
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name: name,
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Navigate to home page after signup
+                navLinks[0].click();
+            } catch (error) {
+                document.getElementById('signup-error').textContent = error.message;
+            }
+        });
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            getStartedBtn.addEventListener('click', () => {
+                document.querySelector('[data-page="meal-plans"]').click();
+            });
+            
+            joinCommunityBtn.addEventListener('click', () => {
+                document.querySelector('[data-page="community"]').click();
+            });
+            
+            loginBtn.addEventListener('click', showAuthPage);
+            signupBtn.addEventListener('click', showAuthPage);
+            
+            // Check auth state
+            auth.onAuthStateChanged(user => {
+                updateAuthUI(user);
+            });
+            
+            // Simulate progress chart animation
+            setTimeout(() => {
+                document.querySelectorAll('.bar-fill').forEach(bar => {
+                    const height = bar.style.height;
+                    bar.style.height = '0%';
+                    setTimeout(() => {
+                        bar.style.height = height;
+                    }, 300);
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
